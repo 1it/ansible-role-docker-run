@@ -1,0 +1,85 @@
+---
+- name: Docker-run | Copy container files
+  template:
+    src:  "{{ item.1.src }}"
+    dest: "{{ item.1.dest }}"
+    owner: "{{ item.1.owner | default(omit) }}"
+  when: item.1.src is defined
+  with_subelements:
+      - "{{ docker_container }}"
+      - files
+      - skip_missing: True
+
+- name: Docker-run | Build container
+  docker_image:
+    name:       "{{ item.name }}"
+    path:       "{{ item.path | default(omit) }}"
+    tag:        "{{ item.tag | default('latest') }}"
+    force:      "{{ item.force | default('yes') }}"
+    nocache:    "{{ item.nocache | default('no') }}"
+    state: present
+  when: item.path is defined
+  with_items:
+    - "{{ docker_container }}"
+
+- name: Docker | Make data-volumes
+  file:
+    path:  "{{ item.1.dir }}"
+    owner: "{{ item.1.owner | default('root') }}"
+    group: "{{ item.1.group | default('root') }}"
+    state: directory
+  when: item.1.dir is defined
+  with_subelements:
+    - "{{ docker_container }}"
+    - dirs
+    - skip_missing: True
+
+- name: Docker-run | Create a network
+  docker_network:
+    name: "{{ docker_container_network | default('bridge') }}"
+
+## ToDo | Replace with native module docker-volume for ansible 2.4
+- name: Docker-run | Create a volume
+  command:
+    "docker volume create {{ item }}"
+  args:
+    creates: "/var/lib/docker/volumes/{{ item }}"
+  with_items:
+    - "{{ docker_container_volume | default(docker_container_name) }}"
+
+- name: Docker-run | Launch container
+  docker_container:
+    name:           "{{ docker_container_prefix | default(omit) }}{{ item.name }}"
+    image:          "{{ item.image | default(item.name) }}:{{ item.tag | default('latest') }}"
+    command:        "{{ item.command | default(omit) }}"
+    entrypoint:     "{{ item.entrypoint | default(omit) }}"
+    log_driver:     "{{ item.logs | default('journald') }}"
+    log_options:    "{{ item.log_opt | default(omit) }}"
+    ulimits:        "{{ item.ulimits | default('nofile:262144:262144') }}"
+    ports:          "{{ item.ports | default(omit) }}"
+    volumes:        "{{ item.volumes | default(omit) }}"
+    env:            "{{ item.env | default(omit) }}"
+    etc_hosts:      "{{ item.hosts | default(omit) }}"
+    recreate:       "{{ item.recreate | default(omit) }}"
+    pull:           "{{ item.pull | default('no') }}"
+    restart_policy: "{{ item.restart | default('unless-stopped') }}"
+    state:          "{{ item.state | default('present') }}
+    links:          "{{ item.links | default(omit) }}"
+    network_mode:   "{{ item.network_mode | default('bridge') }}"
+    networks:
+        - name: "{{ item.networks | default('docker')}}"
+          aliases:
+            - "{{ item.alias | default(item.name) }}"
+  with_items:
+    - "{{ docker_container }}"
+
+- name: Docker-run | Wait for services to start
+  pause: seconds=5
+
+- name: Docker-run | Check the service status
+  uri:
+    url: 'http://localhost:{{ docker_check_port }}'
+    headers:
+        '{{ docker_check_headers | default(omit) }}'
+    status_code: 200
+  when: docker_check_port is defined and docker_check_port != ''

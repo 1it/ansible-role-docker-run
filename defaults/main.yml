@@ -1,0 +1,32 @@
+---
+docker_container_prefix:
+docker_container_network:
+docker_container_volume:
+
+# docker_container:
+#  - name: ct-name
+#    path: ./path-to-build     # OPTIONAL | Local docker build  if needed
+#    image: image/name
+#    restart: always
+#    env: []
+#    # Example
+#    #    'Key: Value'
+#    #    'SHELL: /bin/sh'
+#    networks:
+#      - "{{ docker_container_network }}"
+#    ports: []
+#    # Example
+#    #    - 8080:8080
+#    dirs: []
+#    # Example
+#    #    - { dir: /u01/docker/registry, owner: 105, group 105 }
+#    files: []
+#    # Example
+#    #    - { src: config.xml, dest: /etc/service/config.xml }
+#    volumes: []
+#    # Example
+#    #    - "/root/.docker/config.xml:/etc/service/config.xml"
+#    #    - "/var/volumes/service:/var/lib/service/"
+#    ulimits: []
+#    # Example
+#    #    - "nofile:262144:262144"
