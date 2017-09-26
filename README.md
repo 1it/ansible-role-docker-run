@@ -1,6 +1,11 @@
-# Ansible Role: docker-run
+# Docker-run (Ansible Role)
+=========
 
 Reusable role for any Docker containers (like docker-compose).
+
+Requirements
+------------
+* Ansible 2.3.0
 
 ## Variables
 ```
@@ -65,3 +70,11 @@ docker_container:
         networks:
           - monitoring
 ```
+
+License
+-------
+Apache 2.0
+
+Author Information
+------------------
+Ivan Tuzhilkin ivan.tuzhilkin@gmail.com
