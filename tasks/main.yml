@@ -63,7 +63,7 @@
     recreate:       "{{ item.recreate | default(omit) }}"
     pull:           "{{ item.pull | default('no') }}"
     restart_policy: "{{ item.restart | default('unless-stopped') }}"
-    state:          "{{ item.state | default('present') }}
+    state:          "{{ item.state | default('present') }}"
     links:          "{{ item.links | default(omit) }}"
     network_mode:   "{{ item.network_mode | default('bridge') }}"
     networks:
@@ -78,8 +78,8 @@
 
 - name: Docker-run | Check the service status
   uri:
-    url: 'http://localhost:{{ docker_check_port }}'
+    url: "http://localhost:{{ docker_check_port }}"
     headers:
-        '{{ docker_check_headers | default(omit) }}'
+        "{{ docker_check_headers | default(omit) }}"
     status_code: 200
   when: docker_check_port is defined and docker_check_port != ''
