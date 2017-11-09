@@ -36,16 +36,13 @@
 
 - name: Docker-run | Create a network
   docker_network:
-    name: "{{ docker_container_network | default('bridge') }}"
+    name: "{{ docker_container_network | default(omit) }}"
 
-## ToDo | Replace with native module docker-volume for ansible 2.4
 - name: Docker-run | Create a volume
-  command:
-    "docker volume create {{ item }}"
-  args:
-    creates: "/var/lib/docker/volumes/{{ item }}"
+  docker_volume:
+    name: {{ item }}"
   with_items:
-    - "{{ docker_container_volume | default(docker_container_name) }}"
+    - "{{ docker_container_volume | default(omit) }}"
 
 - name: Docker-run | Launch container
   docker_container:
@@ -67,14 +64,15 @@
     links:          "{{ item.links | default(omit) }}"
     network_mode:   "{{ item.network_mode | default('bridge') }}"
     networks:
-        - name: "{{ item.networks | default('docker')}}"
+        - name: "{{ item.networks if item.network_mode != 'host' | default('bridge') }}"
           aliases:
-            - "{{ item.alias | default(item.name) }}"
+            - "{{ item.alias if item.network_mode != 'host' | default(item.name) }}"
   with_items:
     - "{{ docker_container }}"
 
 - name: Docker-run | Wait for services to start
   pause: seconds=5
+  when: docker_check_port is defined and docker_check_port != ''
 
 - name: Docker-run | Check the service status
   uri:
