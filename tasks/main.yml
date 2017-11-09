@@ -36,15 +36,42 @@
 
 - name: Docker-run | Create a network
   docker_network:
-    name: "{{ docker_container_network | default(omit) }}"
+    name: "{{ item }}"
+  when: docker_container_network is defined and docker_container_network != ''
+  with_items:
+    - "{{ docker_container_network }}"
 
 - name: Docker-run | Create a volume
   docker_volume:
     name: "{{ item }}"
   with_items:
-    - "{{ docker_container_volume | default(omit) }}"
+    - "{{ docker_container_volume }}"
+  when: docker_container_volume is defined and docker_container_volume != ''
 
-- name: Docker-run | Launch container
+- name: Docker-run | Launch container | Host network
+  docker_container:
+    name:           "{{ docker_container_prefix | default(omit) }}{{ item.name }}"
+    image:          "{{ item.image | default(item.name) }}:{{ item.tag | default('latest') }}"
+    command:        "{{ item.command | default(omit) }}"
+    entrypoint:     "{{ item.entrypoint | default(omit) }}"
+    log_driver:     "{{ item.logs | default('journald') }}"
+    log_options:    "{{ item.log_opt | default(omit) }}"
+    ulimits:        "{{ item.ulimits | default('nofile:262144:262144') }}"
+    ports:          "{{ item.ports | default(omit) }}"
+    volumes:        "{{ item.volumes | default(omit) }}"
+    env:            "{{ item.env | default(omit) }}"
+    etc_hosts:      "{{ item.hosts | default(omit) }}"
+    recreate:       "{{ item.recreate | default(omit) }}"
+    pull:           "{{ item.pull | default('no') }}"
+    restart_policy: "{{ item.restart | default('unless-stopped') }}"
+    state:          "{{ item.state | default('present') }}"
+    links:          "{{ item.links | default(omit) }}"
+    network_mode:   "{{ item.network_mode }}"
+  when: item.network_mode is defined and item.network_mode == 'host'
+  with_items:
+    - "{{ docker_container }}"
+
+- name: Docker-run | Launch container | Bridged network
   docker_container:
     name:           "{{ docker_container_prefix | default(omit) }}{{ item.name }}"
     image:          "{{ item.image | default(item.name) }}:{{ item.tag | default('latest') }}"
@@ -64,9 +91,10 @@
     links:          "{{ item.links | default(omit) }}"
     network_mode:   "{{ item.network_mode | default('bridge') }}"
     networks:
-        - name: "{{ item.networks if item.network_mode != 'host' | default('bridge') }}"
+        - name: "{{ item.networks }}"
           aliases:
-            - "{{ item.alias if item.network_mode != 'host' | default(item.name) }}"
+            - "{{ item.alias | default(item.name) }}"
+  when: item.networks is defined and item.networks != ''
   with_items:
     - "{{ docker_container }}"
 
