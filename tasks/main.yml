@@ -40,7 +40,7 @@
 
 - name: Docker-run | Create a volume
   docker_volume:
-    name: {{ item }}"
+    name: "{{ item }}"
   with_items:
     - "{{ docker_container_volume | default(omit) }}"
 
