@@ -1,7 +1,7 @@
 ---
 docker_container_prefix:
-docker_container_network:
-docker_container_volume:
+docker_container_network: ''
+docker_container_volume: ''
 
 # docker_container:
 #  - name: ct-name
