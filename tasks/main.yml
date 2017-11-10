@@ -74,7 +74,7 @@
 - name: Docker-run | Launch container | Bridged network
   docker_container:
     name:           "{{ docker_container_prefix | default(omit) }}{{ item.name }}"
-    image:          "{{ item.image | default(item.name) }}:{{ item.tag | default('latest') }}"
+    image:          "{{ item.image | default(item.name) }}"
     command:        "{{ item.command | default(omit) }}"
     entrypoint:     "{{ item.entrypoint | default(omit) }}"
     log_driver:     "{{ item.logs | default('journald') }}"
