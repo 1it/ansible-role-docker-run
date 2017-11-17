@@ -57,7 +57,6 @@
     log_driver:     "{{ item.logs | default('journald') }}"
     log_options:    "{{ item.log_opt | default(omit) }}"
     ulimits:        "{{ item.ulimits | default('nofile:262144:262144') }}"
-    ports:          "{{ item.ports | default(omit) }}"
     volumes:        "{{ item.volumes | default(omit) }}"
     env:            "{{ item.env | default(omit) }}"
     etc_hosts:      "{{ item.hosts | default(omit) }}"
@@ -67,6 +66,7 @@
     state:          "{{ item.state | default('present') }}"
     links:          "{{ item.links | default(omit) }}"
     network_mode:   "{{ item.network_mode }}"
+    pid_mode:       "{{ item.pid_mode | default(omit) }}"
   when: item.network_mode is defined and item.network_mode == 'host'
   with_items:
     - "{{ docker_container }}"
