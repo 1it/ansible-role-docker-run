@@ -36,17 +36,17 @@
 
 - name: Docker-run | Create a network
   docker_network:
-    name: "{{ item }}"
-  when: docker_container_network is defined and docker_container_network != ''
+    name: "{{ item.networks }}"
+  when: item.networks is defined
   with_items:
-    - "{{ docker_container_network }}"
+    - "{{ docker_container }}"
 
 - name: Docker-run | Create a volume
   docker_volume:
     name: "{{ item }}"
   with_items:
-    - "{{ docker_container_volume }}"
-  when: docker_container_volume is defined and docker_container_volume != ''
+    - "{{ docker_container_volumes }}"
+  when: docker_container_volumes is defined and docker_container_volumes != ''
 
 - name: Docker-run | Launch container | Host network
   docker_container:
@@ -80,7 +80,7 @@
     command:        "{{ item.command | default(omit) }}"
     entrypoint:     "{{ item.entrypoint | default(omit) }}"
     labels:         "{{ item.labels | default(omit) }}"
-    log_driver:     "{{ item.logs | default('journald') }}"
+    log_driver:     "{{ item.logs | default('json-file') }}"
     log_options:    "{{ item.log_opt | default(omit) }}"
     ulimits:        "{{ item.ulimits | default('nofile:262144:262144') }}"
     ports:          "{{ item.ports | default(omit) }}"
@@ -93,11 +93,13 @@
     restart_policy: "{{ item.restart | default('unless-stopped') }}"
     state:          "{{ item.state | default('present') }}"
     links:          "{{ item.links | default(omit) }}"
+    purge_networks: "{{ item.purge_networks | default('no') }}"
     network_mode:   "{{ item.network_mode | default('bridge') }}"
     networks:
         - name: "{{ item.networks }}"
           aliases:
             - "{{ item.alias | default(item.name) }}"
+    networks_cli_compatible: "{{ item.network_cli_compatible | default('yes') }}"
   when: item.networks is defined and item.networks != ''
   with_items:
     - "{{ docker_container }}"

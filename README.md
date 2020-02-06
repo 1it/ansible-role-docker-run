@@ -10,10 +10,8 @@ Requirements
 ## Variables
 ```
 docker_container_prefix: prefix
-# Create network
-docker_container_network: network_name
 # Create volume
-docker_container_volume: volume_name
+docker_container_volumes: volume_name
 # Check http port when container is started
 docker_check_port: 8080
 # HTTP Headers
